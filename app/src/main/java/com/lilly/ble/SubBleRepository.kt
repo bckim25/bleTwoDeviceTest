@@ -1,11 +1,18 @@
 package com.lilly.ble
 
-import android.bluetooth.*
+import android.bluetooth.BluetoothAdapter
+import android.bluetooth.BluetoothDevice
+import android.bluetooth.BluetoothGatt
+import android.bluetooth.BluetoothGattCallback
+import android.bluetooth.BluetoothGattCharacteristic
+import android.bluetooth.BluetoothGattDescriptor
+import android.bluetooth.BluetoothManager
+import android.bluetooth.BluetoothProfile
 import android.bluetooth.le.ScanCallback
 import android.bluetooth.le.ScanFilter
 import android.bluetooth.le.ScanResult
 import android.bluetooth.le.ScanSettings
-import android.content.Context.BLUETOOTH_SERVICE
+import android.content.Context
 import android.os.Build
 import android.os.ParcelUuid
 import android.util.Log
@@ -13,20 +20,20 @@ import androidx.annotation.RequiresApi
 import androidx.lifecycle.MutableLiveData
 import com.lilly.ble.util.BluetoothUtils
 import com.lilly.ble.util.Event
-import kotlinx.coroutines.*
+import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.flow.flow
 import kotlinx.coroutines.flow.flowOn
 import java.util.*
 import kotlin.concurrent.schedule
 
-class BleRepository {
+class SubBleRepository {
 
     private val TAG = "$$$" +
             ""
 
     // ble manager
     val bleManager: BluetoothManager =
-        MyApplication.applicationContext().getSystemService(BLUETOOTH_SERVICE) as BluetoothManager
+        MyApplication.applicationContext().getSystemService(Context.BLUETOOTH_SERVICE) as BluetoothManager
     // ble adapter
     val bleAdapter: BluetoothAdapter?
         get() = bleManager.adapter
@@ -256,11 +263,11 @@ class BleRepository {
 
         private fun readCharacteristic(characteristic: BluetoothGattCharacteristic) {
 
-/*            val msg = characteristic.getStringValue(0)
+            /*            val msg = characteristic.getStringValue(0)
 
-            txtRead = msg
-            isTxtRead = true
-            Log.d(TAG, "read: $msg")*/
+                        txtRead = msg
+                        isTxtRead = true
+                        Log.d(TAG, "read: $msg")*/
             val msg = characteristic.value
             val hex = msg.joinToString("") {
                 "%02X".format(it)
@@ -307,11 +314,11 @@ class BleRepository {
             txtRead = heartrate + " " + breathrate
             isTxtRead = true
 
-/*            if (heartrate >= "40") {
-                prefs = PreferenceUtil(context!!)
-                prefs.setString("heartrate", heartrate)
-                prefs.setString("breathrate", breathrate)
-            }*/
+            /*            if (heartrate >= "40") {
+                            prefs = PreferenceUtil(context!!)
+                            prefs.setString("heartrate", heartrate)
+                            prefs.setString("breathrate", breathrate)
+                        }*/
 
         }
 
@@ -361,7 +368,6 @@ class BleRepository {
         if( !success ) {
             Log.e(TAG, "Failed to write command")
         }
-    }
 
 
 }

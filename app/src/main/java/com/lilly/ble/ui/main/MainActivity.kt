@@ -8,6 +8,7 @@ import android.content.Intent
 import android.content.pm.PackageManager
 import android.os.Build
 import android.os.Bundle
+import android.util.Log
 import android.view.View
 import android.widget.Toast
 import androidx.activity.result.ActivityResult
@@ -19,11 +20,13 @@ import androidx.databinding.DataBindingUtil
 import androidx.recyclerview.widget.LinearLayoutManager
 import androidx.recyclerview.widget.RecyclerView
 import com.lilly.ble.PERMISSIONS
+import com.lilly.ble.PreferenceUtil
 import com.lilly.ble.R
 import com.lilly.ble.REQUEST_ALL_PERMISSION
 import com.lilly.ble.adapter.BleListAdapter
 import com.lilly.ble.databinding.ActivityMainBinding
 import com.lilly.ble.viewmodel.MainViewModel
+import org.koin.android.ext.android.bind
 import org.koin.androidx.viewmodel.ext.android.viewModel
 
 
@@ -31,7 +34,14 @@ class MainActivity : AppCompatActivity() {
 
     private val viewModel by viewModel<MainViewModel>()
     private var adapter: BleListAdapter? = null
+    var device2: BluetoothDevice? = null
+    var device1: BluetoothDevice? = null
 
+    private val prefs: PreferenceUtil by lazy {
+        PreferenceUtil(this)
+    }
+    private val TAG = "$$$" +
+            ""
 
     @RequiresApi(Build.VERSION_CODES.M)
     override fun onCreate(savedInstanceState: Bundle?) {
@@ -49,10 +59,16 @@ class MainActivity : AppCompatActivity() {
 
         adapter = BleListAdapter()
         binding.rvBleList.adapter = adapter
+/*        if(adapter != null) {
+            Log.d(TAG, "adapter ===> ${adapter!!.itemView.toString()}")
+
+        }*/
         adapter?.setItemClickListener(object : BleListAdapter.ItemClickListener {
             override fun onClick(view: View, device: BluetoothDevice?) {
                 if (device != null) {
                     viewModel.connectDevice(device)
+                    device2 = device
+                    prefs.saveBluetoothDevice("device",device)
                 }
             }
         })
@@ -62,10 +78,22 @@ class MainActivity : AppCompatActivity() {
             requestPermissions(PERMISSIONS, REQUEST_ALL_PERMISSION)
         }
 
-
         initObserver(binding)
 
 
+        adapter?.apply {
+            binding.apply {
+
+                button1.setOnClickListener {
+                    Log.d(TAG,"버튼 1 터치")
+                    device1?.let { viewModel?.connectDevice(it)}
+                }
+                button2.setOnClickListener {
+                    Log.d(TAG,"버튼 2 터치")
+                    device2?.let { viewModel?.connectDevice(it) }
+                }
+            }
+        }
 
 
     }
@@ -78,6 +106,16 @@ class MainActivity : AppCompatActivity() {
         viewModel.listUpdate.observe(this, {
             it.getContentIfNotHandled()?.let { scanResults ->
                 adapter?.setItem(scanResults)
+
+                Log.d(TAG,"initObserver ===> ${scanResults.toString()}")
+                if(scanResults.size == 2){
+                    binding.button1.text = scanResults[0].name
+                    binding.button2.text = scanResults[1].name
+
+                    device1 = scanResults[0]
+                    device2 = scanResults[1]
+
+                }
             }
         })
 
@@ -89,9 +127,46 @@ class MainActivity : AppCompatActivity() {
         })
         viewModel._isConnect.observe(this,{
             it.getContentIfNotHandled()?.let{ connect->
+
+                Log.d(TAG,"&&& 블루투스1 상태 ${connect}")
+                var msg: String = if(connect) {
+                    "블루투스1  연결되었습니다. ${connect}"
+                }else{
+                    "블루투스1  끊어졌습니다. ${connect}"
+                }
+
+                if(connect == false) {
+                    Log.d(TAG,"블루투스 1 재접속 시도")
+//                    device2?.let { it1 -> viewModel.connectDevice(it1) }
+                    prefs?.getBluetoothDevice("device")?.let { it1 -> viewModel.connectDevice(it1) }
+
+                }
+                Toast.makeText(this,msg,Toast.LENGTH_LONG ).show()
                 viewModel.isConnect.set(connect)
             }
         })
+
+        viewModel._isConnect2.observe(this,{
+            it.getContentIfNotHandled()?.let { connect->
+                Log.d(TAG,"&&& 블루투스2 상태 ${connect}")
+                var msg: String = if(connect) {
+                    "블루투스2  연결되었습니다. ${connect}"
+                }else{
+                    "블루투스2  끊어졌습니다. ${connect}"
+                }
+                if(connect == false) {
+                    Log.d(TAG,"블루투스 2 재접속 시도")
+//                    device2?.let { it1 -> viewModel.connectDevice(it1) }
+                    prefs?.getBluetoothDevice("device")?.let { it1 -> viewModel.connectDevice(it1) }
+
+                }
+                Toast.makeText(this,msg,Toast.LENGTH_LONG ).show()
+                viewModel.isConnect2.set(connect)
+            }
+
+        })
+
+
         viewModel.statusTxt.observe(this,{
 
            binding.statusText.text = it
@@ -110,6 +185,17 @@ class MainActivity : AppCompatActivity() {
             }
 
         })
+
+        viewModel.readTxt2.observe(this,{
+            binding.txtRead2.append(it)
+            if((binding.txtRead2.measuredHeight - binding.scroller2.scrollY) <=
+                (binding.scroller2.height + binding.txtRead2.lineHeight)) {
+                binding.scroller2.post {
+                    binding.scroller2.smoothScrollTo(0, binding.txtRead2.bottom)
+                }
+            }
+        })
+
     }
     override fun onResume() {
         super.onResume()

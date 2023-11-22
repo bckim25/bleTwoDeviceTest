@@ -31,7 +31,7 @@
 
             <androidx.appcompat.widget.AppCompatButton
                 android:id="@+id/btn_scan"
-                android:layout_width="120dp"
+                android:layout_width="80dp"
                 android:layout_height="wrap_content"
                 android:layout_margin="6dp"
                 android:background="@drawable/button_back"
@@ -42,8 +42,22 @@
                 android:textStyle="bold" />
 
             <androidx.appcompat.widget.AppCompatButton
+                android:id="@+id/btn_test"
+                android:layout_width="80dp"
+                android:layout_height="wrap_content"
+                android:layout_margin="6dp"
+
+                android:text="test"
+                android:onClick="@{()->viewModel.setTest()}"
+                android:background="@drawable/button_back"
+                android:textColor="@color/white"
+                android:textStyle="bold"
+                />
+
+
+            <androidx.appcompat.widget.AppCompatButton
                 android:id="@+id/btn_disconnect"
-                android:layout_width="120dp"
+                android:layout_width="80dp"
                 android:layout_height="wrap_content"
                 android:layout_margin="6dp"
                 android:background="@{viewModel.isConnect?@drawable/button_back:@drawable/round_background_color3}"
@@ -55,7 +69,7 @@
 
             <androidx.appcompat.widget.AppCompatButton
                 android:id="@+id/btn_send"
-                android:layout_width="120dp"
+                android:layout_width="80dp"
                 android:layout_height="wrap_content"
                 android:layout_margin="6dp"
                 android:background="@drawable/button_back2"
@@ -68,13 +82,25 @@
         <ScrollView
 
             android:layout_width="match_parent"
-            android:layout_height="300dp">
+            android:layout_height="5dp">
 
             <androidx.recyclerview.widget.RecyclerView
                 android:id="@+id/rv_ble_list"
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content" />
         </ScrollView>
+
+
+        <Button
+            android:id="@+id/button1"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:text="침대" />
+        <Button
+            android:id="@+id/button2"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:text="쇼파" />
 
         <TextView
             android:layout_width="match_parent"
@@ -86,7 +112,7 @@
         <ScrollView
             android:id="@+id/scroller"
             android:layout_width="match_parent"
-            android:layout_height="match_parent"
+            android:layout_height="250dp"
             android:layout_marginTop="10dp"
             android:background="@color/lilly_color4">
 
@@ -98,6 +124,22 @@
                 android:lineSpacingExtra="7dp"
                 android:textColor="@color/white" />
         </ScrollView>
+        <ScrollView
+            android:id="@+id/scroller2"
+            android:layout_width="match_parent"
+            android:layout_height="match_parent"
+            android:layout_marginTop="10dp"
+            android:background="@color/lilly_color4">
+
+            <TextView
+                android:id="@+id/txt_read2"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_marginStart="10dp"
+                android:lineSpacingExtra="7dp"
+                android:textColor="@color/white" />
+        </ScrollView>
+
 
 
     </LinearLayout>

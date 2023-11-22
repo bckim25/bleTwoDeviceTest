@@ -1,47 +1,50 @@
 package com.lilly.ble.viewmodel
 
-import android.bluetooth.*
+import android.bluetooth.BluetoothAdapter
+import android.bluetooth.BluetoothDevice
 import android.os.Build
 import android.util.Log
 import androidx.annotation.RequiresApi
 import androidx.databinding.ObservableBoolean
-import androidx.databinding.ObservableField
-import androidx.lifecycle.*
-import com.lilly.ble.*
+import androidx.lifecycle.LiveData
+import androidx.lifecycle.ViewModel
+import androidx.lifecycle.asLiveData
+import androidx.lifecycle.viewModelScope
+import com.lilly.ble.SubBleRepository
 import com.lilly.ble.util.Event
-import java.util.*
+import java.util.ArrayList
 
+class SubViewModel(private val subBleRepository: SubBleRepository) : ViewModel() {
 
-class MainViewModel(private val bleRepository: BleRepository) : ViewModel() {
     val statusTxt: LiveData<String>
-        get() = bleRepository.fetchStatusText().asLiveData(viewModelScope.coroutineContext)
+        get() = subBleRepository.fetchStatusText().asLiveData(viewModelScope.coroutineContext)
     val readTxt: LiveData<String>
-        get() = bleRepository.fetchReadText().asLiveData(viewModelScope.coroutineContext)
+        get() = subBleRepository.fetchReadText().asLiveData(viewModelScope.coroutineContext)
 
 
     val readTxt2: LiveData<String>
-        get() = bleRepository.fetchReadText().asLiveData(viewModelScope.coroutineContext)
+        get() = subBleRepository.fetchReadText().asLiveData(viewModelScope.coroutineContext)
 
 
     //ble adapter
     private val bleAdapter: BluetoothAdapter?
-        get() = bleRepository.bleAdapter
+        get() = subBleRepository.bleAdapter
 
 
     val requestEnableBLE : LiveData<Event<Boolean>>
-        get() = bleRepository.requestEnableBLE
+        get() = subBleRepository.requestEnableBLE
     val listUpdate : LiveData<Event<ArrayList<BluetoothDevice>?>>
-        get() = bleRepository.listUpdate
+        get() = subBleRepository.listUpdate
 
     val _isScanning: LiveData<Event<Boolean>>
-        get() = bleRepository.isScanning
+        get() = subBleRepository.isScanning
     var isScanning = ObservableBoolean(false)
     val _isConnect: LiveData<Event<Boolean>>
-        get() = bleRepository.isConnect
+        get() = subBleRepository.isConnect
     var isConnect = ObservableBoolean(false)
 
     val _isConnect2: LiveData<Event<Boolean>>
-        get() = bleRepository.isConnect
+        get() = subBleRepository.isConnect
     var isConnect2 = ObservableBoolean(false)
 
 
@@ -50,13 +53,13 @@ class MainViewModel(private val bleRepository: BleRepository) : ViewModel() {
      */
     @RequiresApi(Build.VERSION_CODES.M)
     fun onClickScan(){
-        bleRepository.startScan()
+        subBleRepository.startScan()
     }
     fun onClickDisconnect(){
-        bleRepository.disconnectGattServer()
+        subBleRepository.disconnectGattServer()
     }
     fun connectDevice(bluetoothDevice: BluetoothDevice){
-        bleRepository.connectDevice(bluetoothDevice)
+        subBleRepository.connectDevice(bluetoothDevice)
     }
 
     fun setTest() {
@@ -73,9 +76,7 @@ class MainViewModel(private val bleRepository: BleRepository) : ViewModel() {
         cmdBytes[0] = 1
         cmdBytes[1] = 2
 
-        bleRepository.writeData(cmdBytes)
+        subBleRepository.writeData(cmdBytes)
 
     }
-
-
 }
