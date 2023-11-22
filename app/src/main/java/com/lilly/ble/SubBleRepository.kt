@@ -1,13 +1,6 @@
 package com.lilly.ble
 
-import android.bluetooth.BluetoothAdapter
-import android.bluetooth.BluetoothDevice
-import android.bluetooth.BluetoothGatt
-import android.bluetooth.BluetoothGattCallback
-import android.bluetooth.BluetoothGattCharacteristic
-import android.bluetooth.BluetoothGattDescriptor
-import android.bluetooth.BluetoothManager
-import android.bluetooth.BluetoothProfile
+import android.bluetooth.*
 import android.bluetooth.le.ScanCallback
 import android.bluetooth.le.ScanFilter
 import android.bluetooth.le.ScanResult
@@ -20,7 +13,7 @@ import androidx.annotation.RequiresApi
 import androidx.lifecycle.MutableLiveData
 import com.lilly.ble.util.BluetoothUtils
 import com.lilly.ble.util.Event
-import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.*
 import kotlinx.coroutines.flow.flow
 import kotlinx.coroutines.flow.flowOn
 import java.util.*
@@ -33,10 +26,13 @@ class SubBleRepository {
 
     // ble manager
     val bleManager: BluetoothManager =
-        MyApplication.applicationContext().getSystemService(Context.BLUETOOTH_SERVICE) as BluetoothManager
+        MyApplication.applicationContext()
+            .getSystemService(Context.BLUETOOTH_SERVICE) as BluetoothManager
+
     // ble adapter
     val bleAdapter: BluetoothAdapter?
         get() = bleManager.adapter
+
     // ble Gatt
     private var bleGatt: BluetoothGatt? = null
 
@@ -52,17 +48,18 @@ class SubBleRepository {
     private var heartrate: String = ""
     private var breathrate: String = ""
 
-    fun fetchReadText() = flow{
-        while(true) {
-            if(isTxtRead) {
+    fun fetchReadText() = flow {
+        while (true) {
+            if (isTxtRead) {
                 emit(txtRead)
                 isTxtRead = false
             }
         }
     }.flowOn(Dispatchers.Default)
-    fun fetchStatusText() = flow{
-        while(true) {
-            if(isStatusChange) {
+
+    fun fetchStatusText() = flow {
+        while (true) {
+            if (isStatusChange) {
                 emit(statusTxt)
                 isStatusChange = false
             }
@@ -82,7 +79,7 @@ class SubBleRepository {
         // check ble adapter and ble enabled
         if (bleAdapter == null || !bleAdapter?.isEnabled!!) {
             requestEnableBLE.postValue(Event(true))
-            statusTxt ="Scanning Failed: ble not enabled"
+            statusTxt = "Scanning Failed: ble not enabled"
             isStatusChange = true
             return
         }
@@ -109,7 +106,7 @@ class SubBleRepository {
     }
 
     @RequiresApi(Build.VERSION_CODES.LOLLIPOP)
-    fun stopScan(){
+    fun stopScan() {
         bleAdapter?.bluetoothLeScanner?.stopScan(BLEScanCallback)
         isScanning.postValue(Event(false))
         statusTxt = "Scan finished. Click on the name to connect to the device."
@@ -170,24 +167,25 @@ class SubBleRepository {
     private val gattClientCallback: BluetoothGattCallback = object : BluetoothGattCallback() {
         override fun onConnectionStateChange(gatt: BluetoothGatt, status: Int, newState: Int) {
             super.onConnectionStateChange(gatt, status, newState)
-            if( status == BluetoothGatt.GATT_FAILURE ) {
+            if (status == BluetoothGatt.GATT_FAILURE) {
                 disconnectGattServer()
                 return
-            } else if( status != BluetoothGatt.GATT_SUCCESS ) {
+            } else if (status != BluetoothGatt.GATT_SUCCESS) {
                 disconnectGattServer()
                 return
             }
-            if( newState == BluetoothProfile.STATE_CONNECTED ) {
+            if (newState == BluetoothProfile.STATE_CONNECTED) {
                 // update the connection status message
 
                 statusTxt = "Connected"
                 isStatusChange = true
                 Log.d(TAG, "Connected to the GATT server")
                 gatt.discoverServices()
-            } else if ( newState == BluetoothProfile.STATE_DISCONNECTED ) {
+            } else if (newState == BluetoothProfile.STATE_DISCONNECTED) {
                 disconnectGattServer()
             }
         }
+
         override fun onServicesDiscovered(gatt: BluetoothGatt?, status: Int) {
             super.onServicesDiscovered(gatt, status)
 
@@ -202,7 +200,7 @@ class SubBleRepository {
             // find command characteristics from the GATT server
             val respCharacteristic = gatt?.let { BluetoothUtils.findResponseCharacteristic(it) }
             // disconnect if the characteristic is not found
-            if( respCharacteristic == null ) {
+            if (respCharacteristic == null) {
                 Log.e(TAG, "Unable to find cmd characteristic")
                 disconnectGattServer()
                 return
@@ -291,22 +289,22 @@ class SubBleRepository {
             }
             //Timber.d("&&& ArrayData : $hex")
 
-            val header      = dataArray[0]
-            val heartInput  = dataArray[1]
+            val header = dataArray[0]
+            val heartInput = dataArray[1]
             val breathInput = dataArray[2]
-            val humanIn     = dataArray[3]
-            val apena       = dataArray[4]
-            val internal_1  = dataArray[5] + dataArray[6]
-            val internal_2  = dataArray[7] + dataArray[8]
-            val internal_3  = dataArray[9] + dataArray[10]
-            val internal_4  = dataArray[11]+ dataArray[12]
-            val nullpoint1  = dataArray[13]
-            val nullpoint2  = dataArray[14]
-            val nullpoint3  = dataArray[15]
-            val nullpoint4  = dataArray[16]
-            val nullpoint5  = dataArray[17]
-            val checksum    = dataArray[18]
-            val end         = dataArray[19]
+            val humanIn = dataArray[3]
+            val apena = dataArray[4]
+            val internal_1 = dataArray[5] + dataArray[6]
+            val internal_2 = dataArray[7] + dataArray[8]
+            val internal_3 = dataArray[9] + dataArray[10]
+            val internal_4 = dataArray[11] + dataArray[12]
+            val nullpoint1 = dataArray[13]
+            val nullpoint2 = dataArray[14]
+            val nullpoint3 = dataArray[15]
+            val nullpoint4 = dataArray[16]
+            val nullpoint5 = dataArray[17]
+            val checksum = dataArray[18]
+            val end = dataArray[19]
 
             heartrate = heartInput.toString()
             breathrate = breathInput.toString()
@@ -337,7 +335,6 @@ class SubBleRepository {
     }
 
 
-
     /**
      * Disconnect Gatt Server
      */
@@ -353,7 +350,7 @@ class SubBleRepository {
         }
     }
 
-    fun writeData(cmdByteArray: ByteArray){
+    fun writeData(cmdByteArray: ByteArray) {
         val cmdCharacteristic = BluetoothUtils.findCommandCharacteristic(bleGatt!!)
         // disconnect if the characteristic is not found
         if (cmdCharacteristic == null) {
@@ -365,9 +362,10 @@ class SubBleRepository {
         cmdCharacteristic.value = cmdByteArray
         val success: Boolean = bleGatt!!.writeCharacteristic(cmdCharacteristic)
         // check the result
-        if( !success ) {
+        if (!success) {
             Log.e(TAG, "Failed to write command")
         }
 
 
+    }
 }

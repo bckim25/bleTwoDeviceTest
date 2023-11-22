@@ -33,6 +33,8 @@ import org.koin.androidx.viewmodel.ext.android.viewModel
 class MainActivity : AppCompatActivity() {
 
     private val viewModel by viewModel<MainViewModel>()
+
+
     private var adapter: BleListAdapter? = null
     var device2: BluetoothDevice? = null
     var device1: BluetoothDevice? = null
@@ -63,7 +65,7 @@ class MainActivity : AppCompatActivity() {
             Log.d(TAG, "adapter ===> ${adapter!!.itemView.toString()}")
 
         }*/
-        adapter?.setItemClickListener(object : BleListAdapter.ItemClickListener {
+/*        adapter?.setItemClickListener(object : BleListAdapter.ItemClickListener {
             override fun onClick(view: View, device: BluetoothDevice?) {
                 if (device != null) {
                     viewModel.connectDevice(device)
@@ -71,7 +73,7 @@ class MainActivity : AppCompatActivity() {
                     prefs.saveBluetoothDevice("device",device)
                 }
             }
-        })
+        })*/
 
         // check if location permission
         if (!hasPermissions(this, PERMISSIONS)) {
@@ -85,12 +87,14 @@ class MainActivity : AppCompatActivity() {
             binding.apply {
 
                 button1.setOnClickListener {
-                    Log.d(TAG,"버튼 1 터치")
+                    Log.d(TAG,"버튼 1 Called")
                     device1?.let { viewModel?.connectDevice(it)}
+                    prefs.saveBluetoothDevice("device1",device1)
                 }
                 button2.setOnClickListener {
-                    Log.d(TAG,"버튼 2 터치")
-                    device2?.let { viewModel?.connectDevice(it) }
+                    Log.d(TAG,"버튼 2 Called")
+                    device2?.let { viewModel?.connectDevice2(it) }
+                    prefs.saveBluetoothDevice("device2",device2)
                 }
             }
         }
@@ -156,14 +160,12 @@ class MainActivity : AppCompatActivity() {
                 }
                 if(connect == false) {
                     Log.d(TAG,"블루투스 2 재접속 시도")
-//                    device2?.let { it1 -> viewModel.connectDevice(it1) }
                     prefs?.getBluetoothDevice("device")?.let { it1 -> viewModel.connectDevice(it1) }
 
                 }
                 Toast.makeText(this,msg,Toast.LENGTH_LONG ).show()
                 viewModel.isConnect2.set(connect)
             }
-
         })
 
 
@@ -186,9 +188,10 @@ class MainActivity : AppCompatActivity() {
 
         })
 
-        viewModel.readTxt2.observe(this,{
-            binding.txtRead2.append(it)
-            if((binding.txtRead2.measuredHeight - binding.scroller2.scrollY) <=
+        viewModel.readTxt2.observe(this, {
+            binding.txtRead.append(it)
+
+            if ((binding.txtRead2.measuredHeight - binding.scroller2.scrollY) <=
                 (binding.scroller2.height + binding.txtRead2.lineHeight)) {
                 binding.scroller2.post {
                     binding.scroller2.smoothScrollTo(0, binding.txtRead2.bottom)

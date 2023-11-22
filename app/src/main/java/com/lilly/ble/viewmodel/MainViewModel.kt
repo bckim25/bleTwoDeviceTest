@@ -5,7 +5,6 @@ import android.os.Build
 import android.util.Log
 import androidx.annotation.RequiresApi
 import androidx.databinding.ObservableBoolean
-import androidx.databinding.ObservableField
 import androidx.lifecycle.*
 import com.lilly.ble.*
 import com.lilly.ble.util.Event
@@ -13,11 +12,11 @@ import java.util.*
 
 
 class MainViewModel(private val bleRepository: BleRepository) : ViewModel() {
+
     val statusTxt: LiveData<String>
         get() = bleRepository.fetchStatusText().asLiveData(viewModelScope.coroutineContext)
     val readTxt: LiveData<String>
         get() = bleRepository.fetchReadText().asLiveData(viewModelScope.coroutineContext)
-
 
     val readTxt2: LiveData<String>
         get() = bleRepository.fetchReadText().asLiveData(viewModelScope.coroutineContext)
@@ -40,9 +39,11 @@ class MainViewModel(private val bleRepository: BleRepository) : ViewModel() {
         get() = bleRepository.isConnect
     var isConnect = ObservableBoolean(false)
 
-    val _isConnect2: LiveData<Event<Boolean>>
-        get() = bleRepository.isConnect
-    var isConnect2 = ObservableBoolean(false)
+
+/*    val _isConnect2: LiveData<Event<Boolean>>
+        get() = subBleRepository!!.isConnect
+    var isConnect2 = ObservableBoolean(false)*/
+
 
 
     /**
@@ -57,6 +58,10 @@ class MainViewModel(private val bleRepository: BleRepository) : ViewModel() {
     }
     fun connectDevice(bluetoothDevice: BluetoothDevice){
         bleRepository.connectDevice(bluetoothDevice)
+    }
+
+    fun connectDevice2(bluetoothDevice: BluetoothDevice){
+//        subBleRepository!!.connectDevice(bluetoothDevice)
     }
 
     fun setTest() {

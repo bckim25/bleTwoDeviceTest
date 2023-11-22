@@ -71,6 +71,7 @@ class BleRepository {
     val currentDevice = MutableLiveData<Event<BluetoothDevice>?>()
 
 
+
     fun startScan() {
         // check ble adapter and ble enabled
         if (bleAdapter == null || !bleAdapter?.isEnabled!!) {
@@ -324,6 +325,7 @@ class BleRepository {
     fun connectDevice(device: BluetoothDevice?) {
         // update the status
         statusTxt = "Connecting to ${device?.address}"
+        Log.d(TAG, "Connecting to ${device?.address} Called ")
         isStatusChange = true
         bleGatt = device?.connectGatt(MyApplication.applicationContext(), false, gattClientCallback)
 
